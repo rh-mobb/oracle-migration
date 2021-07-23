@@ -40,180 +40,86 @@ A Quickstart guide to deploying an Azure RedHat OpenShift cluster.  I copied it 
 
 ## Video Walkthrough
 
-If you prefer a more visual medium, you can watch [Paul Czarkowski](https://twitter.com/pczarkowski) walk through this quickstart on [YouTube](https://youtu.be/VYfCltxoh40).
+TODO
 
-### Prepare Azure Account for Azure OpenShift
+## Begin Setting up a Target ARO Cluster
 
-1. Log into the Azure CLI by running the following and then authorizing through your Web Browser
+1. Setup an ARO cluster and login. For more information on setting up and configuring accounts for ARO, see the [ARO Quickstart Guide](https://mobb.ninja/docs/quickstart-aro.html). This setup takes some time to complete. While waiting for the `az aro create` command to complete, you can continue setting up hte Legacy App environment.
 
-   ```bash
-   az login
-   ```
+## Setup the Source Oracle Environment
 
-1. Make sure you have enough Quota (change the location if you're not using `East US`)
+1.  Set the following environment variables
+    > **NOTE**: if needed, change these values to suit your environment, but the defaults should be OK. TODO: Update as needed
 
-   ```bash
-   az vm list-usage --location "East US" -o table
-   ```
+    ```bash
+    AZR_RESOURCE_LOCATION=eastus
+    AZR_ORACLE_RG=DemoOracleSource
+    ORACLE_VM_NAME=vmoracle19c
+    ```
 
-   see [Addendum - Adding Quota to ARO account](#adding-quota-to-aro-account) if you have less than `36` Quota left for `Total Regional vCPUs`.
+1. Create an Azure Resource Group for the Oracle Environement. 
+    > **NOTE:** You do not have to run `az login` if still logged in from setting up the ARO cluster
 
-1. Register resource providers
+    ```bash
+    az login
+    az group create --name $AZR_ORACLE_RG --location $AZR_RESOURCE_LOCATION
+    ```
 
-   ```bash
-   az provider register -n Microsoft.RedHatOpenShift --wait
-   az provider register -n Microsoft.Compute --wait
-   az provider register -n Microsoft.Storage --wait
-   az provider register -n Microsoft.Authorization --wait
-   ```
+1. Create the Oracle Database VM
 
-### Get Red Hat pull secret
+    > **Warning** The public DNS name needs to be unique and will need to be changed from the sample command. 
+    > **TODO**: Find a workaround for this
 
-> This step is optional, but highly recommended
+    ```bash
+    az vm create \
+        --resource-group $AZR_RESOURCE_GROUP \
+        --name $ORACLE_VM_NAME \
+        --image Oracle:oracle-database-19-3:oracle-database-19-0904:latest \
+        --size Standard_DS2_v2 \
+        --admin-username azureuser \
+        --generate-ssh-keys \
+        --public-ip-address-allocation static \
+        --public-ip-sku Standard \
+        --public-ip-address-dns-name vmoracle19c
+    ```
 
-1. Log into cloud.redhat.com
+1. Create and attach a new disk for Oracle Datafiles
 
-1. Browse to https://cloud.redhat.com/openshift/install/azure/aro-provisioned
+    ```bash
+    az vm disk attach \
+        --name oradata01 \
+        --new \
+        --resource-group $AZR_RESOURCE_GROUP \
+        --size-gb 64 \
+        --sku StandardSSD_LRS \
+        --vm-name vmoracle19c
+    ```
 
-1. click the **Download pull secret** button and remember where you saved it, you'll reference it later.
+1. Open ports for connectivity
 
-## Deploy Azure OpenShift
+    ```bash
+    az network nsg rule create \
+        --resource-group $AZR_RESOURCE_GROUP \
+        --nsg-name vmoracle19cNSG \
+        --name allow-oracle \
+        --protocol tcp \
+        --priority 1001 \
+        --destination-port-range 1521
+    ```
 
-### Variables and Resource Group
+1. Install MedRecDDL onto Oracle Database VM
 
-Set some environment variables to use later, and create an Azure Resource Group.
+1. Deploy Weblogic VM
 
-1. Set the following environment variables
+1. Create an Instance of Azure Database Migration Service
 
-   > Change the values to suit your environment, but these defaults should work.
+1. Launch `ora2pgsql` 
 
-   ```bash
-   AZR_RESOURCE_LOCATION=eastus
-   AZR_RESOURCE_GROUP=openshift
-   AZR_CLUSTER=cluster
-   AZR_PULL_SECRET=~/Downloads/pull-secret.txt
-   ```
-
-1. Create an Azure resource group
-
-   ```bash
-   az group create \
-     --name $AZR_RESOURCE_GROUP \
-     --location $AZR_RESOURCE_LOCATION
-   ```
-
-
-### Networking
-
-Create a virtual network with two empty subnets
-
-1. Create virtual network
-
-   ```bash
-   az network vnet create \
-     --address-prefixes 10.0.0.0/22 \
-     --name "$AZR_CLUSTER-aro-vnet-$AZR_RESOURCE_LOCATION" \
-     --resource-group $AZR_RESOURCE_GROUP
-   ```
-
-1. Create control plane subnet
-
-   ```bash
-   az network vnet subnet create \
-     --resource-group $AZR_RESOURCE_GROUP \
-     --vnet-name "$AZR_CLUSTER-aro-vnet-$AZR_RESOURCE_LOCATION" \
-     --name "$AZR_CLUSTER-aro-control-subnet-$AZR_RESOURCE_LOCATION" \
-     --address-prefixes 10.0.0.0/23 \
-     --service-endpoints Microsoft.ContainerRegistry
-   ```
-
-1. Create machine subnet
-
-   ```bash
-   az network vnet subnet create \
-     --resource-group $AZR_RESOURCE_GROUP \
-     --vnet-name "$AZR_CLUSTER-aro-vnet-$AZR_RESOURCE_LOCATION" \
-     --name "$AZR_CLUSTER-aro-machine-subnet-$AZR_RESOURCE_LOCATION" \
-     --address-prefixes 10.0.2.0/23 \
-     --service-endpoints Microsoft.ContainerRegistry
-   ```
-
-1. Disable network policies on the control plane subnet
-
-   > This is required for the service to be able to connect to and manage the cluster.
-
-   ```bash
-   az network vnet subnet update \
-     --name "$AZR_CLUSTER-aro-control-subnet-$AZR_RESOURCE_LOCATION" \
-     --resource-group $AZR_RESOURCE_GROUP \
-     --vnet-name "$AZR_CLUSTER-aro-vnet-$AZR_RESOURCE_LOCATION" \
-     --disable-private-link-service-network-policies true
-   ```
-
-1. Create the cluster
-
-   > This will take between 30 and 45 minutes.
-
-   ```bash
-   az aro create \
-     --resource-group $AZR_RESOURCE_GROUP \
-     --name $AZR_CLUSTER \
-     --vnet "$AZR_CLUSTER-aro-vnet-$AZR_RESOURCE_LOCATION" \
-     --master-subnet "$AZR_CLUSTER-aro-control-subnet-$AZR_RESOURCE_LOCATION" \
-     --worker-subnet "$AZR_CLUSTER-aro-machine-subnet-$AZR_RESOURCE_LOCATION" \
-     --pull-secret @$AZR_PULL_SECRET
-   ```
-
-1. Get OpenShift console URL
-
-   ```bash
-   az aro show \
-     --name $AZR_CLUSTER \
-     --resource-group $AZR_RESOURCE_GROUP \
-     -o tsv --query consoleProfile
-   ```
-
-1. Get OpenShift credentials
-
-   ```bash
-   az aro list-credentials \
-     --name $AZR_CLUSTER \
-     --resource-group $AZR_RESOURCE_GROUP \
-     -o tsv
-   ```
-
-1. Use the URL and the credentials provided by the output of the last two commands to log into OpenShift via a web browser.
-
-![ARO login page](./images/aro-login.png)
-
-1. Deploy an application to OpenShift
-
-   > See the following video for a guide on easy application deployment on OpenShift.
-
-### Delete Cluster
-
-Once you're done its a good idea to delete the cluster to ensure that you don't get a surprise bill.
-
-1. Delete the cluster
-
-   ```bash
-   az aro delete -y \
-     --resource-group $AZR_RESOURCE_GROUP \
-     --name $AZR_CLUSTER
-   ```
-
-1. Delete the Azure resource group
-
-   > Only do this if there's nothing else in the resource group.
-
-   ```bash
-   az group delete -y \
-     --name $AZR_RESOURCE_GROUP
-   ```
+1. Deploy Azure SQL (in ARO environment?)
 
 ## Addendum
 
-### Adding Quota to ARO account
+w
 
 ![aro quota support ticket request example](./images/aro-quota.png)
 

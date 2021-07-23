@@ -5,6 +5,7 @@ References for building demo.
 
 - [Medrec Sample App](https://github.com/vijaykumaryenne/medrec-sampleui-app)
 - [Migrating Oracle to AzureSQL and PostgreSQL](https://github.com/Microsoft/MCW-Migrating-Oracle-to-Azure-SQL-and-PostgreSQL)
+- [Create an Oracle database in an Azure VM](https://docs.microsoft.com/en-us/azure/virtual-machines/workloads/oracle/oracle-database-quick-create)
 
 ## Related References
 - [Oracle to Azure Database for PostgreSQL Migration Cookbook](https://github.com/Microsoft/DataMigrationTeam/blob/master/Whitepapers/Oracle%20to%20Azure%20PostgreSQL%20Migration%20Cookbook.pdf)
@@ -72,7 +73,7 @@ TODO
 
     ```bash
     az vm create \
-        --resource-group $AZR_RESOURCE_GROUP \
+        --resource-group $AZR_ORACLE_RG \
         --name $ORACLE_VM_NAME \
         --image Oracle:oracle-database-19-3:oracle-database-19-0904:latest \
         --size Standard_DS2_v2 \
@@ -89,7 +90,7 @@ TODO
     az vm disk attach \
         --name oradata01 \
         --new \
-        --resource-group $AZR_RESOURCE_GROUP \
+        --resource-group $AZR_ORACLE_RG \
         --size-gb 64 \
         --sku StandardSSD_LRS \
         --vm-name vmoracle19c
@@ -99,13 +100,60 @@ TODO
 
     ```bash
     az network nsg rule create \
-        --resource-group $AZR_RESOURCE_GROUP \
+        --resource-group $AZR_ORACLE_RG \
         --nsg-name vmoracle19cNSG \
         --name allow-oracle \
         --protocol tcp \
         --priority 1001 \
         --destination-port-range 1521
     ```
+
+1. Retrieve the public IP of the VM and store as `$PUBLIC_IP`. 
+    > **NOTE** The public IP address is also needed on the VM, so it should be noted down for future use. You can view the IP from the env var set here with `echo $PUBLIC_IP`
+
+    ```bash
+    PUBLIC_IP=$(az network public-ip show \
+        --resource-group $AZR_ORACLE_RG \
+        --name vmoracle19cPublicIP \
+        --query ipAddress \
+        --output tsv)
+    ```
+
+### Prep the Oracle VM
+
+1. Connect over SSH and assume root user
+
+    ```bash
+    ssh azureuser@$PUBLIC_IP
+    sudo su -
+    ```
+
+1. Determine the device name for HDD formatting and store as $DISK. Store the partition name as $PART
+
+    ```bash
+        DISK=$(ls -alt /dev/sd*|head -1 | awk '{print $NF}')
+        PART="${DISK}1"
+    ```
+
+1. Following proceedure outlined in [Microsoft docs](https://docs.microsoft.com/en-us/azure/virtual-machines/workloads/oracle/oracle-database-quick-create). **TODO**: Replace with a script download and run...
+
+    ```bash
+        parted $DISK mklabel gpt
+        parted -a optimal $DISK mkpart primary 0GB 64GB
+        parted $DISK print
+        mkfs -t ext4 $PART
+        mkdir /u02
+        mount $PART /u02
+        chmod 777 /u02
+        echo "/dev/sdc1               /u02                    ext4    defaults        0 0" >> /etc/fstab
+        echo "$PUBLIC_IP $HOSTNAME.eastus.cloudapp.azure.com $HOSTNAME" >> /etc/hosts
+        sed -i 's/$/\.eastus\.cloudapp\.azure\.com &/' /etc/hostname
+        firewall-cmd --zone=public --add-port=1521/tcp --permanent
+        firewall-cmd --zone=public --add-port=5502/tcp --permanent
+        firewall-cmd --reload
+    ```
+
+### more things
 
 1. Install MedRecDDL onto Oracle Database VM
 

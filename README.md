@@ -49,69 +49,77 @@ TODO
 ## Setup the Source Oracle Environment
 
 1.  Set the following environment variables
+    > **NOTE**: if needed, change these values to suit your environment, but the defaults should be OK. TODO: Update as needed
 
- > **NOTE**: if needed, change these values to suit your environment, but the defaults should be OK. TODO: Update as needed
-
-  ```bash
-  AZR_RESOURCE_LOCATION=eastus
-  AZR_ORACLE_RG=DemoOracleSource
-  ORACLE_VM_NAME=vmoracle19c
-  ```
+    ```bash
+    AZR_RESOURCE_LOCATION=eastus
+    AZR_ORACLE_RG=DemoOracleSource
+    ORACLE_VM_NAME=vmoracle19c
+    ```
 
 1. Create an Azure Resource Group for the Oracle Environement. 
+    > **NOTE:** You do not have to run `az login` if still logged in from setting up the ARO cluster
 
-  > **NOTE:** You do not have to run `az login` if still logged in from setting up the ARO cluster
-
-  ```bash
-  az login
-  az group create --name $AZR_ORACLE_RG --location $AZR_RESOURCE_LOCATION
-  ```
+    ```bash
+    az login
+    az group create --name $AZR_ORACLE_RG --location $AZR_RESOURCE_LOCATION
+    ```
 
 1. Create the Oracle Database VM
 
-  > **Warning** The public DNS name needs to be unique and will need to be changed from the sample command. 
-  > **TODO**: Find a workaround for this
+    > **Warning** The public DNS name needs to be unique and will need to be changed from the sample command. 
+    > **TODO**: Find a workaround for this
 
-  ```bash
-  az vm create \
-    --resource-group $AZR_RESOURCE_GROUP \
-    --name $ORACLE_VM_NAME \
-    --image Oracle:oracle-database-19-3:oracle-database-19-0904:latest \
-    --size Standard_DS2_v2 \
-    --admin-username azureuser \
-    --generate-ssh-keys \
-    --public-ip-address-allocation static \
-    --public-ip-sku Standard \
-    --public-ip-address-dns-name vmoracle19c
-  ```
+    ```bash
+    az vm create \
+        --resource-group $AZR_RESOURCE_GROUP \
+        --name $ORACLE_VM_NAME \
+        --image Oracle:oracle-database-19-3:oracle-database-19-0904:latest \
+        --size Standard_DS2_v2 \
+        --admin-username azureuser \
+        --generate-ssh-keys \
+        --public-ip-address-allocation static \
+        --public-ip-sku Standard \
+        --public-ip-address-dns-name vmoracle19c
+    ```
 
 1. Create and attach a new disk for Oracle Datafiles
 
-  ```bash
-  az vm disk attach \
-    --name oradata01 \
-    --new \
-    --resource-group $AZR_RESOURCE_GROUP \
-    --size-gb 64 \
-    --sku StandardSSD_LRS \
-    --vm-name vmoracle19c
-  ```
+    ```bash
+    az vm disk attach \
+        --name oradata01 \
+        --new \
+        --resource-group $AZR_RESOURCE_GROUP \
+        --size-gb 64 \
+        --sku StandardSSD_LRS \
+        --vm-name vmoracle19c
+    ```
 
 1. Open ports for connectivity
 
-  ```bash
-  az network nsg rule create \
-    --resource-group $AZR_RESOURCE_GROUP \
-    --nsg-name vmoracle19cNSG \
-    --name allow-oracle \
-    --protocol tcp \
-    --priority 1001 \
-    --destination-port-range 1521
-  ```
+    ```bash
+    az network nsg rule create \
+        --resource-group $AZR_RESOURCE_GROUP \
+        --nsg-name vmoracle19cNSG \
+        --name allow-oracle \
+        --protocol tcp \
+        --priority 1001 \
+        --destination-port-range 1521
+    ```
+
+1. Install MedRecDDL onto Oracle Database VM
+
+1. Deploy Weblogic VM
+
+1. Create an Instance of Azure Database Migration Service
+
+1. Launch `ora2pgsql` 
+
+1. Deploy Azure SQL (in ARO environment?)
 
 ## Addendum
 
-### Adding Quota to ARO account
+w
 
 ![aro quota support ticket request example](./images/aro-quota.png)
 

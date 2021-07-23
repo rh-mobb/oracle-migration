@@ -3,7 +3,9 @@
 # Set environment variables for deployment
 # azure
 AZR_RESOURCE_LOCATION=eastus
-AZR_RESOURCE_GROUP=DemoOracleMigration
+AZR_RESOURCE_GROUP_SOURCE=Demo_Oracle_Migration_Source
+AZR_RESOURCE_GROUP_TARGET=Demo_Oracle_Migration_Target
+
 
 # OpenShift
 AZR_CLUSTER=cluster
@@ -40,17 +42,26 @@ az network nsg rule create ^
     --priority 1001 ^
     --destination-port-range 1521
 
+#Get IP address
+$AZR_DB_Source_IP = az network public-ip show ^
+    --resource-group rg-oracle ^
+    --name vmoracle19cPublicIP ^
+    --query [ipAddress] ^
+
+#Connect to Database
+ssh azureuser@<publicIpAddress>
+
 # Install MedRecDDL onto Oracle Database VM
 
 # Deploy Weblogic VM
 
 # Deploy MedRec Application
 
-# Create an Instance of Azure Database Migration Service -
+# Create an Instance of Azure Database Migration Service - HOLD FOR LATER
 
 # Launch ora2pgsql
 
-# Create ARO Cluster - Hold for Later
+# Create ARO Cluster - HOLD FOR LATER
 
 # Deploy Azure SQL
-az group create --name $AZR_RESOURCE_GROUP --location $westus
+az group create --name $AZR_RESOURCE_GROUP1 --location $AZR_RESOURCE_LOCATION

@@ -252,13 +252,13 @@ mkdir /u02/oradata
 
 - [x] Install MedRecDDL onto Oracle Database VM
 
-- [] Deploy Weblogic VM
+- [ ] Deploy Weblogic VM
 
-- [] Create an Instance of Azure Database Migration Service
+- [ ] Create an Instance of Azure Database Migration Service
 
-- [] Launch `ora2pgsql` 
+- [ ] Launch `ora2pgsql` 
 
-- [] Deploy Azure PostgreSQL (in ARO environment?)
+- [ ] Deploy Azure PostgreSQL (in ARO environment?)
 
 ## Addendum
 

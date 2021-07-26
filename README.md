@@ -153,21 +153,114 @@ TODO
         firewall-cmd --reload
     ```
 
+### Create the Oracle Database
+The below steps continue to follow the process outlined in the microsoft document linked in the previous steps.
+
+1. Switch to the Oracle User
+
+    ```bash
+    sudo su - oracle
+    ```
+
+1. Download the sample database ddl for loading after DB creation
+
+    ```bash
+    wget https://raw.githubusercontent.com/rh-mobb/oracle-migration/main/sample_apps/demo_oracle.ddl
+    ```
+
+
+1. Start the database listener
+
+    ```bash
+    lsnrctl start
+    ```
+
+The output should be similar to the following 
+
+    ```
+    LSNRCTL for Linux: Version 19.0.0.0.0 - Production on 20-OCT-2020 01:58:18
+
+    Copyright (c) 1991, 2019, Oracle.  All rights reserved.
+
+    Starting /u01/app/oracle/product/19.0.0/dbhome_1/bin/tnslsnr: please wait...
+
+    TNSLSNR for Linux: Version 19.0.0.0.0 - Production
+    Log messages written to /u01/app/oracle/diag/tnslsnr/vmoracle19c/listener/alert/log.xml
+    Listening on: (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=vmoracle19c.eastus.cloudapp.azure.com)(PORT=1521)))
+
+    Connecting to (ADDRESS=(PROTOCOL=tcp)(HOST=)(PORT=1521))
+    STATUS of the LISTENER
+    ------------------------
+    Alias                     LISTENER
+    Version                   TNSLSNR for Linux: Version 19.0.0.0.0 - Production
+    Start Date                20-OCT-2020 01:58:18
+    Uptime                    0 days 0 hr. 0 min. 0 sec
+    Trace Level               off
+    Security                  ON: Local OS Authentication
+    SNMP                      OFF
+    Listener Log File         /u01/app/oracle/diag/tnslsnr/vmoracle19c/listener/alert/log.xml
+    Listening Endpoints Summary...
+    (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=vmoracle19c.eastus.cloudapp.azure.com)(PORT=1521)))
+    The listener supports no services
+    The command completed successfully
+    ``` 
+
+1. Create a data directory for the Oracle files
+
+```bash
+mkdir /u02/oradata
+```
+
+1. Run the database creation assistant
+
+    ```bash
+    dbca -silent \
+        -createDatabase \
+        -templateName General_Purpose.dbc \
+        -gdbname test \
+        -sid test \
+        -responseFile NO_VALUE \
+        -characterSet AL32UTF8 \
+        -sysPassword OraPasswd1 \
+        -systemPassword OraPasswd1 \
+        -createAsContainerDatabase false \
+        -databaseType MULTIPURPOSE \
+        -automaticMemoryManagement false \
+        -storageType FS \
+        -datafileDestination "/u02/oradata/" \
+        -ignorePreReqs
+   ```
+
+1. Load the oracle SID into the oracle user's environment variables
+
+    ```bash
+    echo "export ORACLE_SID=test" >> ~oracle/.bashrc
+    source ~/.bashrc
+    ```
+
+1. use `sqlplus` to connect to the oracle DB and load sample data
+
+    ```
+    sqlplus sys as sysdba
+    SQL > @demo_oracle.ddl
+    ```
+
+### Setup the Weblogic VM
+
+
 ### more things
 
-1. Install MedRecDDL onto Oracle Database VM
+- [x] Install MedRecDDL onto Oracle Database VM
 
-1. Deploy Weblogic VM
+- [] Deploy Weblogic VM
 
-1. Create an Instance of Azure Database Migration Service
+- [] Create an Instance of Azure Database Migration Service
 
-1. Launch `ora2pgsql` 
+- [] Launch `ora2pgsql` 
 
-1. Deploy Azure SQL (in ARO environment?)
+- [] Deploy Azure PostgreSQL (in ARO environment?)
 
 ## Addendum
-
-w
 
 ![aro quota support ticket request example](./images/aro-quota.png)
 

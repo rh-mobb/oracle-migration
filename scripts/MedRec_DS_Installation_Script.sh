@@ -1,10 +1,4 @@
-#############################################################################
-# Create DataSource for WLS 12c Tuning & Troubleshooting workshop
-#
-# @author Martien van den Akker, Darwin-IT Professionals
-# @version 1.1, 2018-01-22
-#
-#############################################################################
+print 'Configuring the WL Application Service w/ DB jdbcResource ....'
 # Modify these values as necessary
 import os,sys, traceback
 scriptName = sys.argv[0]

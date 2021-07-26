@@ -1,4 +1,4 @@
-print 'starting the script ....'
+print 'Creating the Admin User for WL ....'
 #
 adminHost=os.environ["ADM_HOST"]
 adminPort=os.environ["ADM_PORT"]

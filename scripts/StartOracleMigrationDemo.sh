@@ -48,20 +48,26 @@ $AZR_DB_Source_IP = az network public-ip show ^
     --name vmoracle19cPublicIP ^
     --query [ipAddress] ^
 
-#Connect to Database
+# Add DNS record
+
+# Connect to Database
 ssh azureuser@<publicIpAddress>
 
 # Install MedRecDDL onto Oracle Database VM
 
-# Deploy Weblogic VM
+# Create WebLogic VM
+
+# Deploy MedRec
 
 # Deploy MedRec Application
 
 # Create an Instance of Azure Database Migration Service - HOLD FOR LATER
 
-# Launch ora2pgsql
+# Launch ora2pgsql and run analysis
 
 # Create ARO Cluster - HOLD FOR LATER
+
+# Launch Konveyor Operators (konveyor.io)
 
 # Deploy Azure SQL
 az group create --name $AZR_RESOURCE_GROUP1 --location $AZR_RESOURCE_LOCATION

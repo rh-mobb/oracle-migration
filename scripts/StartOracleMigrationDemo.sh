@@ -59,9 +59,18 @@ az network nsg rule create \
 
 # Create an Instance of Azure Database Migration Service -
 
-# Install ora2pgsql
+# Install ora2pgsql and configure ora2pg.conf
+wget https://github.com/darold/ora2pg/releases/tag/v22.1
+tar -xvzf v20.0.tar.gz
+cd ora2pg-20.0
+perl Makefile.PL
+make
+sudo make install
+
+# Test configure 
 
 # Launch ora2pgsql and run amigration difficulty analysis - don't forget DUMP_AS_HTML
+# Here is a sample.... https://ora2pg.darold.net/report.html
 
 # Export full database
 

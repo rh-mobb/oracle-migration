@@ -31,7 +31,7 @@ az vm create \
     --generate-ssh-keys \
     --public-ip-address-allocation static \
     --public-ip-sku Standard \
-    --public-ip-address-dns-name vmoracle19c 
+    --public-ip-address-dns-name vmoracle19c
 
 # Create and attach a new disk for Oracle Datafiles
 az vm disk attach \
@@ -59,7 +59,11 @@ az network nsg rule create \
 
 # Create an Instance of Azure Database Migration Service -
 
-# Launch ora2pgsql
+# Install ora2pgsql
+
+# Launch ora2pgsql and run amigration difficulty analysis - don't forget DUMP_AS_HTML
+
+# Export full database
 
 # Create ARO Cluster - Hold for Later
 

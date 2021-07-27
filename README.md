@@ -247,6 +247,7 @@ mkdir /u02/oradata
 
 ### Setup the Weblogic VM
 
+1. 
 
 ### more things
 

@@ -23,6 +23,7 @@ az group create --name $AZR_RESOURCE_GROUP_SOURCE --location $AZR_RESOURCE_LOCAT
 # The static DNS name causes some challenges, ran into a collision already. Is this something
 # we can retrieve instead of set? It returns JSON eventually so probably.
 
+echo "Create OracleVM named vmoracle19c"
 az vm create \
     --resource-group $AZR_RESOURCE_GROUP_SOURCE \
     --name vmoracle19c \
@@ -35,6 +36,7 @@ az vm create \
     --public-ip-address-dns-name vmoracle19c
 
 # Create and attach a new disk for Oracle Datafiles
+echo "Create and attach a new disk for Oracle Datafiles"
 az vm disk attach \
     --name oradata01 \
     --new \
@@ -44,6 +46,7 @@ az vm disk attach \
     --vm-name vmoracle19c
 
 # Open ports for connectivity
+echo "Open ports for connectivity"
 az network nsg rule create \
     --resource-group $AZR_RESOURCE_GROUP_SOURCE \
     --nsg-name vmoracle19cNSG \
@@ -53,20 +56,22 @@ az network nsg rule create \
     --destination-port-range 1521
 
 # Install MedRecDDL onto Oracle Database VM
+echo "Install MedRecDDL onto Oracle Database VM"
 
 # Deploy Weblogic VM
+echo "Deploy Weblogic VM"
 
 # Deploy MedRec Application
-
-# Create an Instance of Azure Database Migration Service -
+echo "Deply MedRec Application"
 
 # Install ora2pgsql and configure ora2pg.conf
-wget https://github.com/darold/ora2pg/releases/tag/v22.1
-tar -xvzf v20.0.tar.gz
-cd ora2pg-20.0
-perl Makefile.PL
-make
-sudo make install
+echo "Install ora2pgsql and configure ora2pg.conf"
+az vm run-command invoke -g $AZR_RESOURCE_GROUP_SOURCE -n vmoracle19c --command-id RunShellScript --scripts "wget https://github.com/darold/ora2pg/releases/tag/v22.1"
+az vm run-command invoke -g $AZR_RESOURCE_GROUP_SOURCE -n vmoracle19c --command-id RunShellScript --scripts "tar -xvzf v20.0.tar.gz"
+az vm run-command invoke -g $AZR_RESOURCE_GROUP_SOURCE -n vmoracle19c --command-id RunShellScript --scripts "cd ora2pg-22.1"
+az vm run-command invoke -g $AZR_RESOURCE_GROUP_SOURCE -n vmoracle19c --command-id RunShellScript --scripts "perl Makefile.PL"
+az vm run-command invoke -g $AZR_RESOURCE_GROUP_SOURCE -n vmoracle19c --command-id RunShellScript --scripts "make"
+az vm run-command invoke -g $AZR_RESOURCE_GROUP_SOURCE -n vmoracle19c --command-id RunShellScript --scripts "sudo make install"
 
 # Test configure
 
@@ -75,7 +80,11 @@ sudo make install
 
 # Export full database
 
+# Create an Instance of Azure Database Migration Service -
+
 # Create ARO Cluster - Hold for Later
+
+# Load Konveyor Operators
 
 # Deploy Azure SQL
 az group create --name $AZR_RESOURCE_GROUP_TARGET --location $AZR_RESOURCE_LOCATION

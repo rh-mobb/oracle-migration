@@ -4,7 +4,8 @@
 # TODO: Adjust these to avoid overlap between ARO cluster and Oracle Source
 # azure
 AZR_RESOURCE_LOCATION=eastus
-AZR_RESOURCE_GROUP=DemoOracleMigration
+AZR_RESOURCE_GROUP_SOURCE=Demo_Oracle_Migration_Source
+AZR_RESOURCE_GROUP_TARGET=Demo_Oracle_Migration_Target
 
 # OpenShift
 AZR_CLUSTER=cluster
@@ -15,7 +16,7 @@ AZR_PULL_SECRET=~/Downloads/pull-secret.txt
 # Begin execution
 # Create a resource group.
 az login
-az group create --name $AZR_RESOURCE_GROUP --location $AZR_RESOURCE_LOCATION
+az group create --name $AZR_RESOURCE_GROUP_SOURCE --location $AZR_RESOURCE_LOCATION
 
 # Setup Legacy Environment of MedRec application
 # Create Oracle Database VM
@@ -23,7 +24,7 @@ az group create --name $AZR_RESOURCE_GROUP --location $AZR_RESOURCE_LOCATION
 # we can retrieve instead of set? It returns JSON eventually so probably.
 
 az vm create \
-    --resource-group $AZR_RESOURCE_GROUP \
+    --resource-group $AZR_RESOURCE_GROUP_SOURCE \
     --name vmoracle19c \
     --image Oracle:oracle-database-19-3:oracle-database-19-0904:latest \
     --size Standard_DS2_v2 \
@@ -37,14 +38,14 @@ az vm create \
 az vm disk attach \
     --name oradata01 \
     --new \
-    --resource-group $AZR_RESOURCE_GROUP \
+    --resource-group $AZR_RESOURCE_GROUP_SOURCE \
     --size-gb 64 \
     --sku StandardSSD_LRS \
     --vm-name vmoracle19c
 
 # Open ports for connectivity
 az network nsg rule create \
-    --resource-group $AZR_RESOURCE_GROUP \
+    --resource-group $AZR_RESOURCE_GROUP_SOURCE \
     --nsg-name vmoracle19cNSG \
     --name allow-oracle \
     --protocol tcp \
@@ -67,7 +68,7 @@ perl Makefile.PL
 make
 sudo make install
 
-# Test configure 
+# Test configure
 
 # Launch ora2pgsql and run amigration difficulty analysis - don't forget DUMP_AS_HTML
 # Here is a sample.... https://ora2pg.darold.net/report.html
@@ -77,4 +78,4 @@ sudo make install
 # Create ARO Cluster - Hold for Later
 
 # Deploy Azure SQL
-az group create --name $AZR_RESOURCE_GROUP --location $westus
+az group create --name $AZR_RESOURCE_GROUP_TARGET --location $AZR_RESOURCE_LOCATION

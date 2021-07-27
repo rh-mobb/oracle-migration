@@ -58,7 +58,7 @@ TODO
     ORACLE_VM_NAME=vmoracle19c
     ```
 
-1. Create an Azure Resource Group for the Oracle Environement. 
+1. Create an Azure Resource Group for the Oracle Environement.
     > **NOTE:** You do not have to run `az login` if still logged in from setting up the ARO cluster
 
     ```bash
@@ -68,7 +68,7 @@ TODO
 
 1. Create the Oracle Database VM
 
-    > **Warning** The public DNS name needs to be unique and will need to be changed from the sample command. 
+    > **Warning** The public DNS name needs to be unique and will need to be changed from the sample command.
     > **TODO**: Find a workaround for this
 
     ```bash
@@ -108,7 +108,7 @@ TODO
         --destination-port-range 1521
     ```
 
-1. Retrieve the public IP of the VM and store as `$PUBLIC_IP`. 
+1. Retrieve the public IP of the VM and store as `$PUBLIC_IP`.
     > **NOTE** The public IP address is also needed on the VM, so it should be noted down for future use. You can view the IP from the env var set here with `echo $PUBLIC_IP`
 
     ```bash
@@ -175,7 +175,7 @@ The below steps continue to follow the process outlined in the microsoft documen
     lsnrctl start
     ```
 
-The output should be similar to the following 
+The output should be similar to the following
 
     ```
     LSNRCTL for Linux: Version 19.0.0.0.0 - Production on 20-OCT-2020 01:58:18
@@ -203,7 +203,7 @@ The output should be similar to the following
     (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=vmoracle19c.eastus.cloudapp.azure.com)(PORT=1521)))
     The listener supports no services
     The command completed successfully
-    ``` 
+    ```
 
 1. Create a data directory for the Oracle files
 
@@ -256,7 +256,7 @@ mkdir /u02/oradata
 
 - [ ] Create an Instance of Azure Database Migration Service
 
-- [ ] Launch `ora2pgsql` 
+- [ ] Launch `ora2pgsql`
 
 - [ ] Deploy Azure PostgreSQL (in ARO environment?)
 
@@ -289,3 +289,12 @@ mkdir /u02/oradata
 1. Click **Review + create >>**
 
 1. Wait until quota is increased.
+# Conversion considerations
+
+## Oracle to AzureSQL for Postgres DB - mostly differences between Oracle and PostgreSQL
+-  ora2pg doesn’t migrate every single object or function - Sometimes is easier to make the change on the Oracle side to make the migration easier
+- Transactions in PostgreSQL are different than Oracle.  Oracle supports nested transactions, Postgresql does not.  SAVEPOINTs can work; but if you have PL/SQL w/ nested transactions - likely manual porting will be necessary
+- Schema ownership is different
+  - Oracle schemas are scoped to namespaces or scope to DB’s
+  - PostgreSQL schemas are independent - roles, users and groups are global objects
+- If you use Oracle packages extensively - assume some level of manual porting will be necessary or proactively get rid of them ahead of time

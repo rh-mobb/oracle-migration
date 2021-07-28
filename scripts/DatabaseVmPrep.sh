@@ -1,4 +1,5 @@
 #!/bin/bash
+# Work In Progress!!
 
 environment_setup() {
     # Get Disk Information for formatting and set variables

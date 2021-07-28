@@ -247,7 +247,37 @@ mkdir /u02/oradata
 
 ### Setup the Weblogic VM
 
-1. 
+1. Create a vm using the oracle weblogic image. The output will include the publicIP which you'll need later.
+
+    ```bash
+    az vm create \
+        --resource-group $AZR_ORACLE_RG \
+        --name source-weblogic \
+        --admin-username azureuser \
+        --generate-ssh-keys \
+        --image Oracle:Oracle-WebLogic-Server:Oracle-WebLogic-Server:12.1.2 \
+    ```
+
+1. Login to server as admin-user set above
+
+1. sudo yum install wget, zip, unzip
+
+1. sudo su - oracle
+
+1. wget http://download.oracle.com/docs/cd/E13222_01/wls/docs81/medrec_tutorial.zip
+
+1. mkdir medrec_tutorial
+
+1. unzip ./medrec_tutorial.zip -d ./medrec_tutorial
+
+1. zip -r ./medrec_tutorial/src/medrecEar .
+
+1. mv medrecEar.zip /opt/oracle/products/Middleware/wlserver/server/lib/console-ext/autodeploy/medrec.ear
+
+1. cd /opt/oracle/products/Middleware/wlserver/server/lib/console-ext/autodeploy
+
+1. wget http://download.oracle.com/docs/cd/E13222_01/wls/docs81/medrec_tutorial.zip
+
 
 ### more things
 

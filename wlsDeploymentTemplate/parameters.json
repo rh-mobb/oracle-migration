@@ -1,0 +1,81 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Location": {
+            "value": "eastus"
+        },
+        "adminPasswordOrKey": {
+            "value": null
+        },
+        "adminUsername": {
+            "value": "weblogic"
+        },
+        "authenticationType": {
+            "value": "password"
+        },
+        "databaseType": {
+            "value": "oracle"
+        },
+        "denyPublicTrafficForAdminServer": {
+            "value": false
+        },
+        "dbPassword": {
+            "value": "medrec1"
+        },
+        "dbUser": {
+            "value": "medrec"
+        },
+        "dnsLabelPrefix": {
+            "value": "wls"
+        },
+        "dsConnectionURL": {
+            "value": "jdbc:oracle:thin:@vmoracle19c723.eastus.cloudapp.azure.com:1521/test"
+        },
+        "enableAAD": {
+            "value": false
+        },
+        "enableDB": {
+            "value": true
+        },
+        "enableCustomDNS": {
+            "value": false
+        },
+        "enableELK": {
+            "value": false
+        },
+        "hasDNSZones": {
+            "value": false
+        },
+        "jdbcDataSourceName": {
+            "value": "jdbc/Test"
+        },
+        "portsToExpose": {
+            "value": "80,443,7001-9000"
+        },
+        "skuUrnVersion": {
+            "value": "owls-122140-jdk8-ol76;Oracle:weblogic-122140-jdk8-ol76:owls-122140-jdk8-ol7;latest"
+        },
+        "useSystemAssignedManagedIdentity": {
+            "value": true
+        },
+        "vmSizeSelect": {
+            "value": "Standard_A2m_v2"
+        },
+        "wlsDomainName": {
+            "value": "medrec"
+        },
+        "wlsPassword": {
+            "value": null
+        },
+        "wlsUserName": {
+            "value": "weblogic"
+        },
+        "enableHTTPAdminListenPort": {
+            "value": true
+        },
+        "enableCustomSSL": {
+            "value": false
+        }
+    }
+}

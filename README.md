@@ -238,52 +238,118 @@ mkdir /u02/oradata
     source ~/.bashrc
     ```
 
-1. use `sqlplus` to connect to the oracle DB and load sample data
+1. Use `sqlplus` to connect to the oracle DB and create the medrec user. 
 
-    ```
+    > **NOTE:** The word after `IDENTIFIED BY` is the password for this user. You'll need this for later.
+
+    ```bash
     sqlplus sys as sysdba
-    SQL > @demo_oracle.ddl
     ```
+    
+    ```SQL
+    CREATE USER medrec
+        IDENTIFIED BY medrec1
+        DEFAULT TABLESPACE users
+        TEMPORARY TABLESPACE temp;
+
+    GRANT connect, resource TO medrec;
+
+    ALTER USER medrec
+        QUOTA unlimited ON users;
+
+    EXIT;
+    ```
+
+1. Use `sqlplus` to connect to the oracleDB as the new user and populate test data.
+
+    > **NOTE:** You may see some errors that pop up when populating the data, this is expected if you have not created these tables previously.
+
+    ```bash
+    sqlplus medrec
+    ```
+
+    ```SQL
+    @demo_oracle.ddl
+    ```
+
 
 ### Setup the Weblogic VM
 
-1. Create a vm using the oracle weblogic image. The output will include the publicIP which you'll need later.
+1. Create a weblogic machine using the Azure Marketplace offering. These steps will need to take place through the GUI to ensure that all the proper preconfiguration takes place.
 
+1. Open the Azure Marketplace and search for WebLogic
+
+1. Select **Create Oracle WebLogic Server With Admin Server**
+
+1. Under the **Basics** tab fill in the following
+    
+    - **Subscription:** Select the appropriate subscription from the dropdown
+    - **Resource Group:** You will need to select an Empty resoruce group or create a new one. Note the name of this group for later
+    - **Region:** Select the same region in which your OracleDB system is setup
+    - **Oracle WebLogic Image:** Select `WebLogic Server 12.2.1.4.0 and JDK8 on Oracle Linux 7.6`
+    - **Virtual machine size:** The default is probably ok for our needs, upsize if concerned
+    - **Credentials:** Fill in credentials for a VM admin as well as a WebLogic Administrator. Using a password for each will ease access needs for this system
+    - **Accept defaults for optional configuration?:** These defaults are OK, but you'll need to note the WebLogic Domain Name or change it to one of your choice, ex. `medrec`. To view and/or change the defaults select the `no` radio button.
+
+1. Click `Next : TLS/SSL Configuration`. Do _NOT_ configure this with SSL/HTTPS for this demo
+
+1. Click `Next : DNS Configuration` and select `No` for configuring a custom DNS alias, we'll use the DNS generated for the VM by Azure
+
+1. Click `Next : Database` and complete the following using information from the test database configured previously. The options below are assuming you used the same names in the example commands above, substitute as needed:
+
+    - **Connect to database?** Yes
+    - **Choose database type:** `Oracle database`
+    - **JNDI Name:** `jdbc/`_Test_
+    - **DataSource Connection String:** `jdbc:oracle:thin:@`_DNS_NAME_OF_DBVM_`:1521/`_test_
+    - **Database username:** _medrec_
+    - **Database Password & Confirm Password:** _medrec1_
+
+1. Do not configure Azure AD or Elasticsearch and Kibana for the purposes of this demonstration.
+
+1. Click `Review + Create` and wait for deployment to complete
+
+### Deploy MedRec App
+
+1. Connect to the admin page <VM_FQDN>:7001/console
+
+1. login as weblogic user from VM setup
+
+1. Lock & Edit
+
+1. Domain Structure > Deployments
+
+1. Install
+
+1. ssh to adminVM server, have to open port in network settings on Azure. Password set with VM creation
+    
     ```bash
-    az vm create \
-        --resource-group $AZR_ORACLE_RG \
-        --name source-weblogic \
-        --admin-username azureuser \
-        --generate-ssh-keys \
-        --image Oracle:Oracle-WebLogic-Server:Oracle-WebLogic-Server:12.1.2 \
+    ssh weblogic@<adminVM_FQDN>
     ```
 
-1. Login to server as admin-user set above
+1. wget FQDN of medrec_tutorial.zip
 
-1. sudo yum install wget, zip, unzip
+1. unzip medrec_tutorial.zip -d medrec_tutorial
 
-1. sudo su - oracle
+1. chown -R oracle: medrec_tutorial
 
-1. wget http://download.oracle.com/docs/cd/E13222_01/wls/docs81/medrec_tutorial.zip
+1. sudo mv ./medrec_tutorial /u01/domains/adminDomain
 
-1. mkdir medrec_tutorial
+1. Back to admin console
 
-1. unzip ./medrec_tutorial.zip -d ./medrec_tutorial
-
-1. zip -r ./medrec_tutorial/src/medrecEar .
-
-1. mv medrecEar.zip /opt/oracle/products/Middleware/wlserver/server/lib/console-ext/autodeploy/medrec.ear
-
-1. cd /opt/oracle/products/Middleware/wlserver/server/lib/console-ext/autodeploy
-
-1. wget http://download.oracle.com/docs/cd/E13222_01/wls/docs81/medrec_tutorial.zip
-
+1. Install through web UI
+    - Lock & Edit
+    - Deployments
+    - Install
+    - browse to medrecEar folder
+    - after installing save config
+    - Update changes/unlock
+    - Deployments - Control - Start Medrec app
 
 ### more things
 
 - [x] Install MedRecDDL onto Oracle Database VM
 
-- [ ] Deploy Weblogic VM
+- [x] Deploy Weblogic VM
 
 - [ ] Create an Instance of Azure Database Migration Service
 

@@ -3,7 +3,7 @@ print 'Configuring the WL Application Service w/ DB jdbcResource ....'
 import os,sys, traceback
 scriptName = sys.argv[0]
 adminHost=os.environ["ADM_HOST"]
-adminPort=os.environ["ADM_PORT"]
+adminPort=os.environ["ADM_PORT"] #7001 is standard
 admServerUrl = 't3://'+adminHost+':'+adminPort
 ttServerName=os.environ["TTSVR_NAME"]
 adminUser='weblogic'

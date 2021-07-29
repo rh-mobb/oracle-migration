@@ -62,7 +62,7 @@ echo "Install MedRecDDL onto Oracle Database VM"
 echo "Deploy Weblogic VM"
 
 # Deploy MedRec Application
-echo "Deply MedRec Application"
+echo "Deploy MedRec Application"
 
 # Install ora2pgsql and configure ora2pg.conf
 echo "Install ora2pgsql and configure ora2pg.conf"

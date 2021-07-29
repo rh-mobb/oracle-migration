@@ -10,7 +10,6 @@ References for building demo.
 ## Related References
 - [Oracle to Azure Database for PostgreSQL Migration Cookbook](https://github.com/Microsoft/DataMigrationTeam/blob/master/Whitepapers/Oracle%20to%20Azure%20PostgreSQL%20Migration%20Cookbook.pdf)
 - [Microsoft Cloud Workshops - Migrating Oracle to Azure SQL and PostgreSQL](https://github.com/microsoft/MCW-Migrating-Oracle-to-Azure-SQL-and-PostgreSQL/blob/master/Hands-on%20lab/Before%20the%20HOL%20-%20Migrating%20Oracle%20to%20Azure%20SQL%20and%20PostgreSQL.md)
-Based on
 
 ## Target Audience
 - Application Developer
@@ -18,11 +17,13 @@ Based on
 - Database Administrator
 
 ## Azure services and related products
-- OpenShift on AzureSQL
-- Azure Database for PostgreSQL
-- Azure Database Migration Service
-- ora2pg
-- Oracle
+- [OpenShift on Azure (ARO)](https://azure.microsoft.com/en-us/pricing/details/openshift/#overview)
+- [Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql/#overview)
+- Azure Database Migration Service *Coming Later*
+
+## Other products/services leveraged
+- [Konveyor](https://konveyor.io)
+- [ora2pgsql](https://ora2pg.darold.net/)
 
 A Quickstart guide to migrating an Oracle Application to ARO.  This project provides working code for a demonstration using the MedRec application.
 
@@ -258,6 +259,8 @@ mkdir /u02/oradata
 
 - [ ] Launch `ora2pgsql`
 
+- [ ] Install and run Konveyor
+
 - [ ] Deploy Azure PostgreSQL (in ARO environment?)
 
 ## Addendum
@@ -292,9 +295,9 @@ mkdir /u02/oradata
 # Conversion considerations
 
 ## Oracle to AzureSQL for Postgres DB - mostly differences between Oracle and PostgreSQL
--  ora2pg doesn’t migrate every single object or function - Sometimes is easier to make the change on the Oracle side to make the migration easier
-- Transactions in PostgreSQL are different than Oracle.  Oracle supports nested transactions, Postgresql does not.  SAVEPOINTs can work; but if you have PL/SQL w/ nested transactions - likely manual porting will be necessary
+-  [ora2pgsql](https://ora2pg.darold.net/) doesn’t migrate every single object or function - Sometimes is easier to make the change on the Oracle side to make the migration easier
+  - e.g If you use Oracle packages extensively - assume some level of manual porting will be necessary or proactively get rid of them ahead of time
+- Transactions in PostgreSQL are different than Oracle.  Oracle supports nested transactions, PostgreSQL does not.  SAVEPOINTs can work; but if you have PL/SQL w/ nested transactions - likely manual porting will be necessary
 - Schema ownership is different
-  - Oracle schemas are scoped to namespaces or scope to DB’s
+  - Oracle schemas are scoped to namespaces or scope to databases
   - PostgreSQL schemas are independent - roles, users and groups are global objects
-- If you use Oracle packages extensively - assume some level of manual porting will be necessary or proactively get rid of them ahead of time

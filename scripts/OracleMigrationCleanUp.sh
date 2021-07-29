@@ -2,8 +2,9 @@
 
 # Set environment variables for deployment
 # azure
-AZR_RESOURCE_LOCATION=eastus
-AZR_RESOURCE_GROUP=DemoOracleMigration
+ZR_RESOURCE_LOCATION=eastus
+AZR_RESOURCE_GROUP_SOURCE=Demo_Oracle_Migration_Source
+AZR_RESOURCE_GROUP_TARGET=Demo_Oracle_Migration_Target
 
 # OpenShift
 AZR_CLUSTER=cluster
@@ -15,9 +16,13 @@ AZR_PULL_SECRET=~/Downloads/pull-secret.txt
 
 # Delete ARO cluster
 az aro delete -y \
-  --resource-group $AZR_RESOURCE_GROUP \
+  --resource-group $AZR_RESOURCE_GROUP_TARGET \
   --name $AZR_CLUSTER
 
-# Delete Resource Group
+# Delete Source Resource Group
 az group delete -y \
-  --name $AZR_RESOURCE_GROUP
+  --name $AZR_RESOURCE_GROUP_TARGET
+
+# Delete Target Resource Group
+  az group delete -y \
+    --name $AZR_RESOURCE_GROUP_SOURCE

@@ -70,7 +70,8 @@ TODO
 1. Create the Oracle Database VM
 
     > **Warning** The public DNS name needs to be unique and will need to be changed from the sample command.
-    > **TODO**: Find a workaround for this
+
+    > **TODO**: testing without specifying public dns name
 
     ```bash
     az vm create \
@@ -161,6 +162,11 @@ The below steps continue to follow the process outlined in the microsoft documen
 
     ```bash
     sudo su - oracle
+    ```
+1. If not already there, change to the oracle user's home directory
+
+    ```bash
+    cd ~
     ```
 
 1. Download the sample database ddl for loading after DB creation
@@ -287,7 +293,7 @@ mkdir /u02/oradata
     - **Subscription:** Select the appropriate subscription from the dropdown
     - **Resource Group:** You will need to select an Empty resoruce group or create a new one. Note the name of this group for later
     - **Region:** Select the same region in which your OracleDB system is setup
-    - **Oracle WebLogic Image:** Select `WebLogic Server 12.2.1.4.0 and JDK8 on Oracle Linux 7.6`
+    - **Oracle WebLogic Image:** Select `WebLogic Server 14.1.1.1.0 and JDK8 on Oracle Linux 7.6`
     - **Virtual machine size:** The default is probably ok for our needs, upsize if concerned
     - **Credentials:** Fill in credentials for a VM admin as well as a WebLogic Administrator. Using a password for each will ease access needs for this system
     - **Accept defaults for optional configuration?:** These defaults are OK, but you'll need to note the WebLogic Domain Name or change it to one of your choice, ex. `medrec`. To view and/or change the defaults select the `no` radio button.
@@ -301,7 +307,7 @@ mkdir /u02/oradata
     - **Connect to database?** Yes
     - **Choose database type:** `Oracle database`
     - **JNDI Name:** `jdbc/`_Test_
-    - **DataSource Connection String:** `jdbc:oracle:thin:@`_DNS_NAME_OF_DBVM_`:1521/`_test_
+    - **DataSource Connection String:** `jdbc:oracle:thin:@`_PUBLIC_IP_OF_DBVM_`:1521/`_test_
     - **Database username:** _medrec_
     - **Database Password & Confirm Password:** _medrec1_
 
@@ -321,30 +327,83 @@ mkdir /u02/oradata
 
 1. Install
 
-1. ssh to adminVM server, have to open port in network settings on Azure. Password set with VM creation
-    
+1. Need to move the dumped files to the adminVM someplace useful, could upload through the web interface if needed.
+
+1. note path to medrec ear for installation
+
+1. probably also need to install other applications in the same modules folder
+
+# Migration Steps?
+
+## Using ora2pg to migrate the oracle database to Azure PostgreSQL
+
+This work will be done on the source database machine, you will need to ssh into that system to run these commands and setup `ora2pg`
+
+### Initial Setup
+
+1. ssh to DB machine
+
+1. Do we need to create the target database? IDK we'll get there! huzzah!
+
+1. Install prereqs
+
     ```bash
-    ssh weblogic@<adminVM_FQDN>
+    wget https://download.oracle.com/otn_software/linux/instantclient/213000/oracle-instantclient-basic-21.3.0.0.0-1.x86_64.rpm
+    wget https://download.oracle.com/otn_software/linux/instantclient/213000/oracle-instantclient-sqlplus-21.3.0.0.0-1.x86_64.rpm
+    wget https://download.oracle.com/otn_software/linux/instantclient/213000/oracle-instantclient-devel-21.3.0.0.0-1.x86_64.rpm
+    wget https://download.oracle.com/otn_software/linux/instantclient/213000/oracle-instantclient-jdbc-21.3.0.0.0-1.x86_64.rpm
+
+    sudo rpm -ivh oracle-instantclient-basic-21.3.0.0.0-1.x86_64.rpm
+    sudo rpm -ivh oracle-instantclient-devel-21.3.0.0.0-1.x86_64.rpm
+    sudo rpm -ivh oracle-instantclient-sqlplus-21.3.0.0.0-1.x86_64.rpm
+    sudo rpm -ivh oracle-instantclient-jdbc-21.3.0.0.0-1.x86_64.rpm
+
+    sudo yum install perl-App-cpanminus
+    sudo yum install gcc
+
+    sudo cpanm DBD::Oracle
+    sudo cpanm DBD::Pg
+    sudo cpanm Time::HiRes
     ```
 
-1. wget FQDN of medrec_tutorial.zip
+1. Install Ora2Pg
 
-1. unzip medrec_tutorial.zip -d medrec_tutorial
+    ```bash
+    wget https://github.com/darold/ora2pg/archive/refs/tags/v22.1.tar.gz
+    tar xzf v22.1.tar.gz
+    cd ora2pg-22.1
+    perl Makefile.PL
+    make && sudo make install
+    ```
 
-1. chown -R oracle: medrec_tutorial
+<!--
+NOTE: This part didn't actually work? BUt also I ran this install command earlier, though technically not as root? I don't think it really needs to be done. The instructions here are out of date and appear to be for the full bloaty CPAN module and not for CPAN Minus which appears to be easier to use? But also it's just a command on the terminal which is not up to date in the ora2pg docs... recording this for posterity
 
-1. sudo mv ./medrec_tutorial /u01/domains/adminDomain
+1. Installing DBD::Oracle
 
-1. Back to admin console
+    ```bash
+    sudo su
+    export LD_LIBRARY_PATH=/usr/lib/oracle/21/client64/lib
+    export ORACLE_HOME=/usr/lib/oracle/21/client64
+    ```
+-->
 
-1. Install through web UI
-    - Lock & Edit
-    - Deployments
-    - Install
-    - browse to medrecEar folder
-    - after installing save config
-    - Update changes/unlock
-    - Deployments - Control - Start Medrec app
+### Prepping the Migration
+
+1. Set environment variables to ensure the recently installed oracle bits are included
+
+    ```bash
+    export LD_LIBRARY_PATH=/usr/lib/oracle/11.2/client64/lib
+    export PATH="/usr/lib/oracle/11.2/client64/bin:$PATH"
+    ```
+
+1. Generate a migration template
+
+    ```bash
+    mkdir ./migration
+    ora2pg --project_base ./migration --init_project medrec_demo
+
+    ```
 
 ### more things
 
